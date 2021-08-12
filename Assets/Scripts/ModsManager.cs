@@ -12,8 +12,8 @@ public class ModsManager : MonoBehaviour
 {
     public void SyncMods(string modsPath)
     {
-        InitModsDirectory();
-        return;
+        //InitModsDirectory();
+        //return;
         var downloadComp = GetComponent<DownloadFile>();
         var coreModsDir = GetComponent<ExecutableStart>().staticPrefs.coreModsDir;
         var repoUrl =  GetComponent<ExecutableStart>().staticPrefs.repositoryUrl + "coreSkirdaMods/"; 
@@ -35,9 +35,10 @@ public class ModsManager : MonoBehaviour
         foreach (var mod in remoteCoreModsList)
         {
             var downloadPath = GetComponent<ExecutableStart>().staticPrefs.repositoryUrl + "coreSkirdaMods/" + mod;
-            var savePath = Path.Combine(GetComponent<ExecutableStart>().staticPrefs.coreModsDir , mod); 
-            downloadComp.StartDownload(downloadPath,savePath);
+            var savePath = Path.Combine(GetComponent<ExecutableStart>().staticPrefs.coreModsDir , mod);
         }
+
+        InitModsDirectory();
     }
 
     private void InitModsDirectory()
