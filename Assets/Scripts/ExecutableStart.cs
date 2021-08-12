@@ -25,12 +25,13 @@ public class ExecutableStart : MonoBehaviour
     [SerializeField] private Toggle loadDirectlyToTheServerToggle; 
     
     [Serializable]
-    private struct StaticPreferences
+    public struct StaticPreferences
     {
         public string version;
         public string gameDir;
         public string assetsDir;
         public string javaLibDir;
+        public string ModsDir;
         public string coreModsDir;
         public string optionalModsDir;
         public string javaClass;
@@ -41,6 +42,7 @@ public class ExecutableStart : MonoBehaviour
         public string tweakClass;
         public string versionType;
         public string hardcodedLibs;
+        public string repositoryUrl;
     }
     /*
     [Serializable]
@@ -56,7 +58,7 @@ public class ExecutableStart : MonoBehaviour
     */
 
     [FormerlySerializedAs("args")] [FormerlySerializedAs("_args")]
-    [SerializeField] private StaticPreferences staticPrefs;
+    [SerializeField] public StaticPreferences staticPrefs;
    
 
     private void FirstTimeInit()
@@ -97,8 +99,7 @@ public class ExecutableStart : MonoBehaviour
         
         
         //loadDirectlyToTheServerToggle
-
-        GetComponent<ModsManager>().GetRemoteListOfMods();
+        
         /*
         var modsList = GetComponent<ModsManager>().GetLocalListOfMods(staticPrefs.coreModsDir);
         foreach (var mod in modsList)
@@ -147,5 +148,10 @@ public class ExecutableStart : MonoBehaviour
 
         print(consoleCommand);
         System.Diagnostics.Process.Start("java", consoleCommand); 
+    }
+
+    public void downloadFile__()
+    {
+        //GetComponent<DownloadFile>().StartDownload("kek");
     }
 }
