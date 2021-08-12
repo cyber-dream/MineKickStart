@@ -6,7 +6,6 @@ using System.IO;
 using System.Runtime.CompilerServices;
 using TMPro;
 using UnityEditor;
-using UnityEditor.UI;
 using UnityEngine;
 using UnityEngine.Serialization;
 using UnityEngine.UI;
@@ -43,7 +42,7 @@ public class ExecutableStart : MonoBehaviour
         public string versionType;
         public string hardcodedLibs;
     }
-    
+    /*
     [Serializable]
     private struct UserPreferences
     {
@@ -53,10 +52,12 @@ public class ExecutableStart : MonoBehaviour
         public string modsHash;
         public bool loadDirectlyToTheServer;
     }
+    [SerializeField] private UserPreferences userPrefs;
+    */
 
     [FormerlySerializedAs("args")] [FormerlySerializedAs("_args")]
     [SerializeField] private StaticPreferences staticPrefs;
-    [SerializeField] private UserPreferences userPrefs;
+   
 
     private void FirstTimeInit()
     {
@@ -91,12 +92,8 @@ public class ExecutableStart : MonoBehaviour
             FirstTimeInit();
         }
 
-        userPrefs.username = PlayerPrefs.GetString("username");
-        userPrefs.loadDirectlyToTheServer = Int2Bool(PlayerPrefs.GetInt("loadDirectlyToTheServer"));
-        
-        
-        usernameInputField.text = userPrefs.username;
-        loadDirectlyToTheServerToggle.isOn = userPrefs.loadDirectlyToTheServer;
+        usernameInputField.text = PlayerPrefs.GetString("username");
+        loadDirectlyToTheServerToggle.isOn = Int2Bool(PlayerPrefs.GetInt("loadDirectlyToTheServer"));
         
         
         //loadDirectlyToTheServerToggle
@@ -113,13 +110,11 @@ public class ExecutableStart : MonoBehaviour
     public void ChangeUsername()
     {
         PlayerPrefs.SetString("username", usernameInputField.text);
-        userPrefs.username = usernameInputField.text;
     }
 
     public void SetLoadDirectlyToTheServer()
     {
         PlayerPrefs.SetInt("loadDirectlyToTheServerToggle", Bool2Int(loadDirectlyToTheServerToggle.isOn));
-        userPrefs.loadDirectlyToTheServer = loadDirectlyToTheServerToggle.isOn;
     }
     
     public void Launch()
@@ -140,8 +135,10 @@ public class ExecutableStart : MonoBehaviour
                                     + "--versionType" + " " + staticPrefs.versionType + " "
                                     + "--server" + " " + "127.0.0.1" + " "
                                     + "--port" + " " + "21456" + " "*/;
-        
 
+
+        var usernameArgument = new Argument() {command = "username", details = PlayerPrefs.GetString("username")};
+        arguments.Add(usernameArgument);
         
         foreach (var argument in arguments)
         {
