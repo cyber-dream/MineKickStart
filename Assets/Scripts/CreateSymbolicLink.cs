@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using UnityEngine;
-
+/*
 public class CreateSymbolicLink
 {
     [DllImport("Kernel32.dll", CharSet = CharSet.Unicode )]
@@ -14,3 +14,4 @@ public class CreateSymbolicLink
         CreateHardLink(lpFileName, lpExistingFileName, IntPtr.Zero);
     }
 }
+*/

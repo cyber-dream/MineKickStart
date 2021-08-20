@@ -8,8 +8,10 @@ using UnityEngine.UI;
 
 public class UiOperator : MonoBehaviour
 {
-    [SerializeField] private Slider downloadProgressSlider;
-    [SerializeField] private TMP_Text downloadProgressText;
+    public Slider downloadProgressSlider;
+    public TMP_Text downloadProgressText;
+    public TMP_InputField usernameInputField;
+    public Toggle loadDirectlyToTheServerToggle;
     
     public IEnumerator ShowDownloadProgress (UnityWebRequest uwr) {
         while (!uwr.isDone) {
@@ -20,4 +22,5 @@ public class UiOperator : MonoBehaviour
         }
         downloadProgressSlider.value = 0;
     }
+    
 }

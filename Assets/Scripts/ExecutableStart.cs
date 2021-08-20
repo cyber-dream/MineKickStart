@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using TMPro;
 using UnityEditor;
@@ -11,118 +12,30 @@ using UnityEngine.Serialization;
 using UnityEngine.UI;
 using Debug = UnityEngine.Debug;
 
-public class ExecutableStart : MonoBehaviour
+public class ExecutableStart
 {
-    [Serializable]
-    public struct Argument
+    private static List<string> GetLibs()
     {
-        public string command;
-        public string details;
-    }
-    
-    [SerializeField] private List<Argument> arguments;
-    [SerializeField] private TMP_InputField usernameInputField;
-    [SerializeField] private Toggle loadDirectlyToTheServerToggle; 
-    
-    [Serializable]
-    public struct StaticPreferences
-    {
-        public string version;
-        public string gameDir;
-        public string assetsDir;
-        public string javaLibDir;
-        public string ModsDir;
-        public string coreModsDir;
-        public string optionalModsDir;
-        public string javaClass;
-        public string assetsIndex;
-        public string uuid;
-        public string accessToken;
-        public string userType;
-        public string tweakClass;
-        public string versionType;
-        public string hardcodedLibs;
-        public string repositoryUrl;
-    }
-    /*
-    [Serializable]
-    private struct UserPreferences
-    {
-        public Vector2Int screenRes;
-        public bool fullscreen;
-        public string username;
-        public string modsHash;
-        public bool loadDirectlyToTheServer;
-    }
-    [SerializeField] private UserPreferences userPrefs;
-    */
+        var libs = Directory.GetFiles(@"C:\Users\dart\AppData\LocalLow\Skirda\MineKickStart\.minecraft\libraries", "*.*",
+            SearchOption.AllDirectories);
 
-    [FormerlySerializedAs("args")] [FormerlySerializedAs("_args")]
-    [SerializeField] public StaticPreferences staticPrefs;
-   
-
-    private void FirstTimeInit()
-    {
-        PlayerPrefs.SetString("username", "Player");
-        PlayerPrefs.SetInt("loadDirectlyToTheServer", 1);
-
+        return libs.ToList();
     }
 
-    private int Bool2Int (bool variable)
+    public void Launch(Launcher.StaticPreferences staticPrefs, List<Launcher.Argument> arguments)
     {
-        return variable ? 1 : 0;
-    }
-    
-    private bool Int2Bool (int variable)
-    {
-        switch (variable)
+        var _libs = GetLibs();
+        _libs.Add(Application.persistentDataPath + @"\.minecraft\versions\1.12.2\1.12.2.jar");
+
+        var libsString = "";
+        foreach (var _string in _libs)
         {
-            case 1:
-                return true;
-            case 0:
-                return false;
-            default:
-                Debug.LogError("wrong int to convert");
-                return false;
-        }
-    }
-    
-    private void Start()
-    {
-        if (PlayerPrefs.GetString("username") == "")
-        {
-            FirstTimeInit();
+            libsString += _string + ";";
         }
 
-        usernameInputField.text = PlayerPrefs.GetString("username");
-        loadDirectlyToTheServerToggle.isOn = Int2Bool(PlayerPrefs.GetInt("loadDirectlyToTheServer"));
-        
-        
-        //loadDirectlyToTheServerToggle
-        
-        /*
-        var modsList = GetComponent<ModsManager>().GetLocalListOfMods(staticPrefs.coreModsDir);
-        foreach (var mod in modsList)
-        {
-            Debug.Log(mod[0] + mod[1]);
-        }*/
-    }
-
-    public void ChangeUsername()
-    {
-        PlayerPrefs.SetString("username", usernameInputField.text);
-    }
-
-    public void SetLoadDirectlyToTheServer()
-    {
-        PlayerPrefs.SetInt("loadDirectlyToTheServerToggle", Bool2Int(loadDirectlyToTheServerToggle.isOn));
-    }
-    
-    public void Launch()
-    {
         var consoleCommand = 
                                      "-Djava.library.path=" + staticPrefs.javaLibDir + " "
-                                    + "-cp" + " " + staticPrefs.hardcodedLibs + " "
+                                    + "-cp" + " " + libsString + " "
                                     /*+ staticPrefs.javaClass + " "
                                     + "--username" + " " + userPrefs.username + " "
                                     + "--version" + " " + staticPrefs.version + " "
@@ -138,20 +51,14 @@ public class ExecutableStart : MonoBehaviour
                                     + "--port" + " " + "21456" + " "*/;
 
 
-        var usernameArgument = new Argument() {command = "username", details = PlayerPrefs.GetString("username")};
+        var usernameArgument = new Launcher.Argument() {command = "username", details = PlayerPrefs.GetString("username")};
         arguments.Add(usernameArgument);
         
         foreach (var argument in arguments)
         {
             consoleCommand += (argument.command == "" ? "" : "--" + argument.command ) + " " + argument.details + " ";
         }
-
-        print(consoleCommand);
+        
         System.Diagnostics.Process.Start("java", consoleCommand); 
-    }
-
-    public void downloadFile__()
-    {
-        //GetComponent<DownloadFile>().StartDownload("kek");
     }
 }

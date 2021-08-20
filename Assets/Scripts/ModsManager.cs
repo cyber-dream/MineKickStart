@@ -8,15 +8,22 @@ using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using UnityEngine;
 
-public class ModsManager : MonoBehaviour
+public class ModsManager
 {
-    public void SyncMods(string modsPath)
+    //private Launcher.StaticPreferences _staticPrefs;
+
+    private void Start()
+    {
+        //_staticPrefs = GetComponent<Launcher>().staticPrefs;
+    }
+
+    public void SyncMods(Launcher.StaticPreferences staticPrefs)
     {
         //InitModsDirectory();
         //return;
-        var downloadComp = GetComponent<DownloadFile>();
-        var coreModsDir = GetComponent<ExecutableStart>().staticPrefs.coreModsDir;
-        var repoUrl =  GetComponent<ExecutableStart>().staticPrefs.repositoryUrl + "coreSkirdaMods/"; 
+        
+        var coreModsDir = staticPrefs.coreModsDir;
+        var repoUrl =  staticPrefs.repositoryUrl + "coreSkirdaMods/"; 
         var localCoreModsList = GetLocalListOfMods(coreModsDir);
         var remoteCoreModsList = GetRemoteListOfMods(repoUrl);
 
@@ -29,33 +36,86 @@ public class ModsManager : MonoBehaviour
 
         foreach (var mod in localCoreModsList)
         {
-            File.Delete(GetComponent<ExecutableStart>().staticPrefs.coreModsDir);
+            File.Delete(staticPrefs.coreModsDir);
         }
         
         foreach (var mod in remoteCoreModsList)
         {
-            var downloadPath = GetComponent<ExecutableStart>().staticPrefs.repositoryUrl + "coreSkirdaMods/" + mod;
-            var savePath = Path.Combine(GetComponent<ExecutableStart>().staticPrefs.coreModsDir , mod);
+            var downloadPath = staticPrefs.repositoryUrl + "coreSkirdaMods/" + mod;
+            var savePath = Path.Combine(staticPrefs.coreModsDir , mod);
         }
 
-        InitModsDirectory();
+        InitModsDirectory(staticPrefs);
     }
 
-    private void InitModsDirectory()
+    public bool CheckUpdates(Launcher.StaticPreferences staticPrefs)
     {
-        var localModsList = GetLocalListOfMods(GetComponent<ExecutableStart>().staticPrefs.coreModsDir);
+        var coreModsDir = staticPrefs.coreModsDir;
+        var repoUrl =  staticPrefs.repositoryUrl + "coreSkirdaMods/"; 
+        var localCoreModsList = GetLocalListOfMods(coreModsDir);
+        var remoteCoreModsList = GetRemoteListOfMods(repoUrl);
+
+        var modsToIgnore = remoteCoreModsList.Intersect(localCoreModsList).ToList();
+        foreach (var mod in modsToIgnore)
+        {
+            remoteCoreModsList.Remove(mod);
+            localCoreModsList.Remove(mod);
+        }
+
+        return modsToIgnore.Count > 0;
+    }
+
+    public void BakeMods(Launcher.StaticPreferences staticPrefs)
+    {
+        var coreMods = GetLocalListOfMods(staticPrefs.coreModsDir);
+        var optionalMods = GetLocalListOfMods(staticPrefs.optionalModsDir);
+        var userMods = GetLocalListOfMods(staticPrefs.userModsDir);
+        
+        var modsDirIO = new DirectoryInfo(staticPrefs.modsDir);
+        
+        foreach (var mod in modsDirIO.GetFiles())
+        {
+            mod.Delete();
+        }
+
+
+        foreach (var mod in coreMods)
+        {
+            File.Copy(staticPrefs.coreModsDir + mod, staticPrefs.modsDir + mod);
+        }   
+        
+        foreach (var mod in optionalMods)
+        {
+            File.Copy(staticPrefs.optionalModsDir + mod, staticPrefs.modsDir + mod);
+        }   
+        
+        foreach (var mod in userMods)
+        {
+            File.Copy(staticPrefs.userModsDir + mod, staticPrefs.modsDir + mod);
+        }   
+        
+        
+        
+        
+        
+    }
+    
+
+    private void InitModsDirectory(Launcher.StaticPreferences staticPrefs)
+    {
+        var localModsList = GetLocalListOfMods(staticPrefs.coreModsDir);
         foreach (var localMod in localModsList)
         {
-            var exitedFile = Path.Combine(GetComponent<ExecutableStart>().staticPrefs.coreModsDir + localMod);
-            var linkFile = Path.Combine(GetComponent<ExecutableStart>().staticPrefs.ModsDir + localMod);
+            var exitedFile = Path.Combine(staticPrefs.coreModsDir + localMod);
+            var linkFile = Path.Combine(staticPrefs.modsDir + localMod);
             Debug.Log(exitedFile);
             Debug.Log(linkFile);
-            CreateSymbolicLink.Link(linkFile, exitedFile);
+            //CreateSymbolicLink.Link(linkFile, exitedFile);
         }
         
     }
 
-    private List<string> GetLocalListOfMods(string modsPath)
+    private static List<string> GetLocalListOfMods(string modsPath)
     {
         var modsDir = new DirectoryInfo(modsPath);
         var modsFiles = modsDir.GetFiles();
